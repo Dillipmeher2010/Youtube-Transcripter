@@ -17,6 +17,7 @@ and summarizing the entire video, providing the important summary in points
 within 250 words. Please provide the summary of the text given here:  """
 
 # Function to extract transcript details
+@st.cache_data
 def extract_transcript_details(youtube_video_url):
     try:
         video_id = youtube_video_url.split("v=")[1].split("&")[0]
@@ -37,6 +38,7 @@ def extract_transcript_details(youtube_video_url):
         return None
 
 # Function to translate text to English
+@st.cache_data
 def translate_to_english(text):
     translation = translate_client.translate(text, target_language='en')
     return translation['translatedText']
@@ -60,17 +62,20 @@ if youtube_link:
 
 if st.button("Get Detailed Notes"):
     if youtube_link:
-        # Step 1: Extract transcript
-        transcript_text = extract_transcript_details(youtube_link)
+        with st.spinner("Fetching transcript..."):
+            # Step 1: Extract transcript
+            transcript_text = extract_transcript_details(youtube_link)
 
         if transcript_text:
-            # Step 2: Translate transcript to English
-            translated_text = translate_to_english(transcript_text)
+            with st.spinner("Translating transcript..."):
+                # Step 2: Translate transcript to English
+                translated_text = translate_to_english(transcript_text)
 
-            # Step 3: Generate summary
-            summary = generate_gemini_content(translated_text, prompt)
-            st.markdown("## Detailed Notes:")
-            st.write(summary)
+            with st.spinner("Generating summary..."):
+                # Step 3: Generate summary
+                summary = generate_gemini_content(translated_text, prompt)
+                st.markdown("## Detailed Notes:")
+                st.write(summary)
         else:
             st.error("Could not generate summary. Please check the transcript.")
     else:
