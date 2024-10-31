@@ -1,5 +1,5 @@
-youtube_transcript_api
-streamlit
+google-cloud-translate
+youtube-transcript-api
 google-generativeai
 python-dotenv
-pathlib
+streamlit
