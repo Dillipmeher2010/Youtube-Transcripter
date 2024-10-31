@@ -25,17 +25,13 @@ def extract_transcript_details(youtube_video_url):
         transcript = " ".join([i["text"] for i in transcript_text])
         return transcript
     except NoTranscriptFound:
-        st.error("No transcripts found for the video.")
-        return None
+        return None, "No transcripts found for the video."
     except TranscriptsDisabled:
-        st.error("Transcripts are disabled for this video.")
-        return None
+        return None, "Transcripts are disabled for this video."
     except VideoUnavailable:
-        st.error("The requested video is unavailable.")
-        return None
+        return None, "The requested video is unavailable."
     except Exception as e:
-        st.error(f"Error fetching transcript: {str(e)}")
-        return None
+        return None, f"Error fetching transcript: {str(e)}"
 
 # Function to translate text to English
 @st.cache_data
@@ -64,19 +60,19 @@ if st.button("Get Detailed Notes"):
     if youtube_link:
         with st.spinner("Fetching transcript..."):
             # Step 1: Extract transcript
-            transcript_text = extract_transcript_details(youtube_link)
+            transcript_text, error_message = extract_transcript_details(youtube_link)
+            if transcript_text is None:
+                st.error(error_message)
+                st.stop()
 
-        if transcript_text:
-            with st.spinner("Translating transcript..."):
-                # Step 2: Translate transcript to English
-                translated_text = translate_to_english(transcript_text)
+        with st.spinner("Translating transcript..."):
+            # Step 2: Translate transcript to English
+            translated_text = translate_to_english(transcript_text)
 
-            with st.spinner("Generating summary..."):
-                # Step 3: Generate summary
-                summary = generate_gemini_content(translated_text, prompt)
-                st.markdown("## Detailed Notes:")
-                st.write(summary)
-        else:
-            st.error("Could not generate summary. Please check the transcript.")
+        with st.spinner("Generating summary..."):
+            # Step 3: Generate summary
+            summary = generate_gemini_content(translated_text, prompt)
+            st.markdown("## Detailed Notes:")
+            st.write(summary)
     else:
         st.error("Please enter a valid YouTube link.")
